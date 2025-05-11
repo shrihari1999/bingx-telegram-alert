@@ -18,11 +18,15 @@ jobs:
         with:
           python-version: '3.10'  # Adjust as needed
 
-      - name: Download last known positions
-        uses: actions/download-artifact@v4
+      # Cache active_positions.json file
+      - name: Restore cached positions file
+        id: cache-positions
+        uses: actions/cache@v4
         with:
-          name: active-positions
-          path: .
+          path: active_positions.json
+          key: active-positions-${{ runner.os }}-${{ github.sha }}  # Unique key for the cache
+          restore-keys: |
+            active-positions-${{ runner.os }}-
 
       - name: Run tracking script
         env:
@@ -30,8 +34,9 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python track_positions.py
 
-      - name: Upload updated positions
-        uses: actions/upload-artifact@v4
+      # Save updated positions file back to cache
+      - name: Cache updated positions file
+        uses: actions/cache@v4
         with:
-          name: active-positions
           path: active_positions.json
+          key: active-positions-${{ runner.os }}-${{ github.sha }}  # Same key used during restore
