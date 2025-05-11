@@ -39,12 +39,14 @@ def fetch_json(url):
         return json.loads(response.read().decode())
 
 def load_previous_positions(path):
+    """Load previous positions from cached file."""
     if os.path.exists(path):
         with open(path, "r") as f:
             return json.load(f)
     return []
 
 def save_positions(positions, path):
+    """Save updated positions to the cached file."""
     with open(path, "w") as f:
         json.dump(positions, f, indent=2)
 
@@ -70,7 +72,6 @@ def main():
     print("Fetching current positions...")
     current_data = fetch_json(POSITION_URL)
     current_positions = current_data.get("data", {}).get("positions", [])
-    current_positions = []
     current_ids = get_position_ids(current_positions)
     current_symbols = get_position_symbols(current_positions)
 
@@ -124,7 +125,7 @@ def main():
                 )
                 send_telegram_message(message)
 
-    # Save current state
+    # Save current state back into the cache (this will be handled by GitHub Actions)
     save_positions(current_positions, POSITION_FILE)
     print("✅ Updated active positions stored in:", POSITION_FILE)
 
